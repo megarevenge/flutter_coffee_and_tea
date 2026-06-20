@@ -54,6 +54,7 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: GlassBottomBar(
         selectedIconColor: Color(0xff8A5F41),
         unselectedIconColor: Color(0xffA77F60),
+        settings: LiquidGlassSettings(glassColor: Colors.grey.withAlpha(50)),
         selectedIndex: _selectedIndex,
         onTabSelected: (index) {
           setState(() {
@@ -78,7 +79,37 @@ class _HomePageState extends State<HomePage> {
           ),
           GlassBottomBarTab(
             label: 'Orders',
-            icon: const Icon(Icons.receipt_rounded),
+            icon: Stack(
+              clipBehavior: Clip.none, // Allows the badge to overflow the boundaries of the Icon
+              children: [
+                const Icon(Icons.receipt_rounded),
+                Positioned(
+                  right:
+                      -4, // Adjust these values to position the badge perfectly
+                  top: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: const Text(
+                      '3',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           GlassBottomBarTab(
             label: 'Profile',

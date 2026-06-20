@@ -13,6 +13,31 @@ class HomeContentPage extends StatefulWidget {
 class _HomeContentPageState extends State<HomeContentPage> {
   int _currentIndex = 0;
 
+  final List<Map<String, dynamic>> cardInfo = [
+    {'name': 'Espresso', 'price': 2.99},
+    {'name': 'Americano', 'price': 3.49},
+    {'name': 'Macchiato', 'price': 3.75},
+    {'name': 'Cortado', 'price': 3.99},
+    {'name': 'Cappuccino', 'price': 4.50},
+    {'name': 'Latte', 'price': 4.75},
+    {'name': 'Flat White', 'price': 4.50},
+    {'name': 'Mocha', 'price': 5.25},
+    {'name': 'Cold Brew', 'price': 4.25},
+    {'name': 'Affogato', 'price': 5.50},
+
+    // 10 Types of Tea
+    {'name': 'Black Tea', 'price': 3.00},
+    {'name': 'Earl Grey', 'price': 3.25},
+    {'name': 'Green Tea', 'price': 3.25},
+    {'name': 'Matcha Latte', 'price': 5.00},
+    {'name': 'Oolong Tea', 'price': 3.75},
+    {'name': 'White Tea', 'price': 3.50},
+    {'name': 'Pu-erh Tea', 'price': 4.00},
+    {'name': 'Masala Chai', 'price': 4.50},
+    {'name': 'Chamomile Tea', 'price': 3.25},
+    {'name': 'Rooibos Tea', 'price': 3.50},
+  ];
+
   final List<Map<String, String>> cardData = [
     {'title': 'Free Delivery', 'image': 'assets/poster_home_page/delivery.png'},
     {
@@ -42,7 +67,27 @@ class _HomeContentPageState extends State<HomeContentPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(height: 40),
+              SizedBox(height: 20),
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: SizedBox(
+                  height: 30,
+                  child: Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Special offers',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight(900),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
+
               CarouselSlider(
                 options: CarouselOptions(
                   height: 150.0,
@@ -77,7 +122,26 @@ class _HomeContentPageState extends State<HomeContentPage> {
                 }).toList(),
               ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: SizedBox(
+                  height: 30,
+                  child: Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Menu',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight(900),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -94,7 +158,11 @@ class _HomeContentPageState extends State<HomeContentPage> {
                     childAspectRatio: 0.75, // Adjust card height-to-width ratio
                   ),
                   itemBuilder: (context, index) {
-                    return ItemCard(index: index);
+                    return ItemCard(
+                      index: index,
+                      price: cardInfo[index]['price'],
+                      name: cardInfo[index]['name'],
+                    );
                   },
                 ),
               ),
