@@ -11,47 +11,55 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Search',
           style: TextStyle(color: Color(0xffF3E4C9), fontSize: 25),
         ),
         centerTitle: true,
-        backgroundColor: Color(0xff8A5F41),
+        backgroundColor: const Color(0xff8A5F41),
       ),
       backgroundColor: Colors.white, 
-      body: Padding(
-        padding: const EdgeInsets.only(top: 40), // Adjusted top padding
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, // Align elements to the top of page
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20), // Standardized padding
-              child: Row(
-                children: [
-                  Expanded( 
-                    child: TextField(
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search, color: Colors.grey), // Added search icon
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Ensures taps pass through and register on empty spaces
+        onTap: () {
+          FocusScope.of(context).unfocus(); // Drops keyboard focus away cleanly
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(top: 40), 
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start, 
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20), 
+                child: Row(
+                  children: [
+                    Expanded( 
+                      
+                      child: TextField(
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search, color: Colors.grey), 
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xff8A5F41)), 
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          fillColor: Colors.white,
+                          filled: true,
+                          hintText: 'Search...',
+                          hintStyle: TextStyle(color: Colors.grey[500]),
                         ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xff8A5F41)), // Matches your theme
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
-                        ),
-                        fillColor: Colors.white,
-                        filled: true,
-                        hintText: 'Search...',
-                        hintStyle: TextStyle(color: Colors.grey[500]),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

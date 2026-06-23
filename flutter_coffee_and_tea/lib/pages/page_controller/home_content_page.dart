@@ -4,15 +4,20 @@ import 'package:flutter_coffee_and_tea/components/item_card.dart';
 import 'package:liquid_glass_widgets/widgets/shared/glass_page.dart';
 
 class HomeContentPage extends StatefulWidget {
-  const HomeContentPage({super.key});
+  // FIXED: Accept the exact ValueNotifier state structure passed down from HomePage
+  final ValueNotifier<Map<String, Map<String, dynamic>>> cartNotifier;
+
+  const HomeContentPage({
+    super.key,
+    required this.cartNotifier,
+  });
 
   @override
   State<HomeContentPage> createState() => _HomeContentPageState();
 }
 
 class _HomeContentPageState extends State<HomeContentPage> {
-  int _currentIndex = 0;
-
+  
   final List<Map<String, dynamic>> cardInfo = [
     {'name': 'Espresso', 'price': 2.99},
     {'name': 'Americano', 'price': 3.49},
@@ -24,8 +29,6 @@ class _HomeContentPageState extends State<HomeContentPage> {
     {'name': 'Mocha', 'price': 5.25},
     {'name': 'Cold Brew', 'price': 4.25},
     {'name': 'Affogato', 'price': 5.50},
-
-    // 10 Types of Tea
     {'name': 'Black Tea', 'price': 3.00},
     {'name': 'Earl Grey', 'price': 3.25},
     {'name': 'Green Tea', 'price': 3.25},
@@ -54,12 +57,12 @@ class _HomeContentPageState extends State<HomeContentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Home',
           style: TextStyle(color: Color(0xffF3E4C9), fontSize: 25),
         ),
         centerTitle: true,
-        backgroundColor: Color(0xff8A5F41),
+        backgroundColor: const Color(0xff8A5F41),
       ),
       backgroundColor: Colors.white,
       body: GlassPage(
@@ -67,39 +70,37 @@ class _HomeContentPageState extends State<HomeContentPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(height: 20),
-              Padding(
+              const SizedBox(height: 20),
+
+              const Padding(
                 padding: EdgeInsets.only(left: 20),
                 child: SizedBox(
                   height: 30,
-                  child: Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Special offers',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight(900),
-                        ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Special offers',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black54
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 20),
 
               CarouselSlider(
                 options: CarouselOptions(
                   height: 150.0,
-                  enlargeCenterPage: false, // Makes the center card pop out
-                  autoPlay: true, // Enables automatic sliding
-                  autoPlayAnimationDuration: const Duration(milliseconds: 100),
-                  //autoPlayCurve: Curves.linear,
+                  enlargeCenterPage: false,
+                  autoPlay: true,
+                  autoPlayAnimationDuration: const Duration(milliseconds: 500),
                   aspectRatio: 16 / 9,
                   autoPlayInterval: const Duration(seconds: 3),
                   onPageChanged: (index, reason) {
                     setState(() {
-                      _currentIndex = index;
                     });
                   },
                 ),
@@ -122,50 +123,52 @@ class _HomeContentPageState extends State<HomeContentPage> {
                 }).toList(),
               ),
 
-              SizedBox(height: 30),
-              Padding(
+              const SizedBox(height: 30),
+
+              const Padding(
                 padding: EdgeInsets.only(left: 20),
                 child: SizedBox(
                   height: 30,
-                  child: Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Menu',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight(900),
-                        ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Menu',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black54
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 10),
 
+              // FIXED: Added GridView.builder to map and display your item cards dynamically
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: GridView.builder(
-                  shrinkWrap:
-                      true, // Crucial: Tells GridView to only take needed space
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Disables GridView's inner scrolling
-                  itemCount: 10, // 2 columns x 5 rows = 10 items total
+                  shrinkWrap: true, // Crucial so it doesn't fight with SingleChildScrollView
+                  physics: const NeverScrollableScrollPhysics(), // Let the parent scroll view handle scrolling
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // 2 items per row
-                    crossAxisSpacing: 12, // Horizontal spacing between cards
-                    mainAxisSpacing: 12, // Vertical spacing between cards
-                    childAspectRatio: 0.75, // Adjust card height-to-width ratio
+                    crossAxisCount: 2, // 2 cards per row
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 24, // Extra vertical space so floating counters don't overlap cards below
+                    childAspectRatio: 0.85, // Adjust card height/width ratio
                   ),
+                  itemCount: cardInfo.length,
                   itemBuilder: (context, index) {
+                    final item = cardInfo[index];
                     return ItemCard(
-                      index: index,
-                      price: cardInfo[index]['price'],
-                      name: cardInfo[index]['name'],
+                      name: item['name'],
+                      price: item['price'],
+                      cartNotifier: widget.cartNotifier, // Pass down the central state notifier
                     );
                   },
                 ),
               ),
+
+              const SizedBox(height: 120), // Extra space to clear the floating transparent bottom navigation bar
             ],
           ),
         ),

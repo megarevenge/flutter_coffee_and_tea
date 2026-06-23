@@ -16,6 +16,10 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late PageController _pageController;
 
+  // 1. Define the central cart notifier matching your ItemCard map structure
+  final ValueNotifier<Map<String, Map<String, dynamic>>> _cartNotifier =
+      ValueNotifier<Map<String, Map<String, dynamic>>>({});
+
   @override
   void initState() {
     super.initState();
@@ -25,12 +29,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _cartNotifier.dispose(); // Good practice to clean up memory resources
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBody: true,
       backgroundColor: Colors.white,
       body: GlassPage(
@@ -41,26 +47,25 @@ class _HomePageState extends State<HomePage> {
               _selectedIndex = index;
             });
           },
-          //physics: ClampingScrollPhysics(),
           children: [
-            HomeContentPage(),
+            HomeContentPage(cartNotifier: _cartNotifier,),
             SearchPage(),
-            OrdersPage(),
+            OrdersPage(cartNotifier: _cartNotifier),
             ProfilePage(),
           ],
         ),
       ),
 
       bottomNavigationBar: GlassBottomBar(
-        selectedIconColor: Color(0xff8A5F41),
-        unselectedIconColor: Color(0xffA77F60),
+        selectedIconColor: const Color(0xff8A5F41),
+        unselectedIconColor: const Color(0xffA77F60),
         settings: LiquidGlassSettings(glassColor: Colors.grey.withAlpha(50)),
         selectedIndex: _selectedIndex,
         onTabSelected: (index) {
+          FocusScope.of(context).unfocus();
           setState(() {
             _selectedIndex = index;
           });
-          // Triggers the slide animation to the respective file widget
           _pageController.animateToPage(
             index,
             duration: const Duration(milliseconds: 350),
@@ -79,36 +84,48 @@ class _HomePageState extends State<HomePage> {
           ),
           GlassBottomBarTab(
             label: 'Orders',
-            icon: Stack(
-              clipBehavior: Clip.none, // Allows the badge to overflow the boundaries of the Icon
-              children: [
-                const Icon(Icons.receipt_rounded),
-                Positioned(
-                  right:
-                      -4, // Adjust these values to position the badge perfectly
-                  top: -4,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: const Text(
-                      '3',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+            // 3. Listen to cart changes to dynamically calculate total quantities for your badge
+            icon: ValueListenableBuilder<Map<String, Map<String, dynamic>>>(
+              valueListenable: _cartNotifier,
+              builder: (context, cartMap, child) {
+                // Loop through your map collection and sum all item ['quantity'] properties
+                int totalItems = cartMap.values.fold(
+                  0,
+                  (sum, itemInfo) => sum + (itemInfo['quantity'] as int? ?? 0),
+                );
+                return Stack(
+                  clipBehavior: Clip.none, 
+                  children: [
+                    const Icon(Icons.receipt_rounded),
+                    // Only render badge overlay if there's actually items in the user's cart
+                    if (totalItems > 0)
+                      Positioned(
+                        right: -4, 
+                        top: -4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            '$totalItems',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
-                      
-                    ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
           GlassBottomBarTab(

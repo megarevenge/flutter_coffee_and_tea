@@ -1,22 +1,82 @@
 import 'package:flutter/material.dart';
 
 class ItemCard extends StatefulWidget {
-  final int index;
   final String name;
   final double price;
+  final ValueNotifier<Map<String, Map<String, dynamic>>> cartNotifier;
 
   const ItemCard({
     super.key,
-    required this.index,
     required this.name,
     required this.price,
+    required this.cartNotifier,
   });
+
+  // Helper method to safely update the shared ValueNotifier map state
+  void _updateQuantityInNotifier(int delta) {
+    // Create a shallow copy of the map to properly trigger ValueNotifier listeners
+    final updatedCart = Map<String, Map<String, dynamic>>.from(
+      cartNotifier.value,
+    );
+
+    if (updatedCart.containsKey(name)) {
+      int currentQty = updatedCart[name]!['quantity'];
+      int newQty = currentQty + delta;
+
+      if (newQty <= 0) {
+        updatedCart.remove(name); // Remove item completely if count hits zero
+      } else {
+        // Create a copy of the inner map to ensure clean reactive value changes
+        updatedCart[name] = {'price': price, 'quantity': newQty};
+      }
+    } else if (delta > 0) {
+      // First time adding this specific drink to the cart
+      updatedCart[name] = {'price': price, 'quantity': 1};
+    }
+
+    // Assigning a brand new map reference triggers the ValueListenableBuilder badge UI rebuild
+    cartNotifier.value = updatedCart;
+  }
 
   @override
   State<ItemCard> createState() => _ItemCardState();
 }
 
 class _ItemCardState extends State<ItemCard> {
+  int _quantity = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncLocalQuantityWithNotifier();
+  }
+
+  @override
+  void didUpdateWidget(covariant ItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Keeps quantities accurate if items get added or dropped via other views
+    _syncLocalQuantityWithNotifier();
+  }
+
+  // Helper to extract state values cleanly out of your notifier structure
+  void _syncLocalQuantityWithNotifier() {
+    final currentCart = widget.cartNotifier.value;
+    if (currentCart.containsKey(widget.name)) {
+      _quantity = currentCart[widget.name]?['quantity'] ?? 0;
+    } else {
+      _quantity = 0;
+    }
+  }
+
+  // Handles updating both local display and the global notifier state together
+  void _changeQuantity(int delta) {
+    setState(() {
+      _quantity += delta;
+      if (_quantity < 0) _quantity = 0;
+    });
+    widget._updateQuantityInNotifier(delta);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -28,51 +88,144 @@ class _ItemCardState extends State<ItemCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // IMAGE SECTION WITH FLOATING STACK COUNTER
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
-                ),
-                child: Center(
-                  child: Icon(Icons.coffee, size: 40, color: Color(0xff8A5F41)),
-                ),
-              ),
-            ),
-            // Placeholder for Text/Details
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Stack(
+                clipBehavior: Clip
+                    .none, // Allows counter to overflow the image boundary smoothly
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text(
-                          overflow: TextOverflow.ellipsis,
-                          widget.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.coffee,
+                        size: 40,
+                        color: Color(0xff8A5F41),
+                      ),
+                    ),
+                  ),
+
+                  if (_quantity > 0)
+                    Positioned(
+                      bottom: 5,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xff8A5F41),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(40),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _changeQuantity(-1),
+                                child: const Icon(
+                                  Icons.remove,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: Text(
+                                  '$_quantity',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _changeQuantity(1),
+                                child: const Icon(
+                                  Icons.add,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        '\$ ${widget.price}',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight(900),
-                          fontSize: 14
+                    ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 1. Wrap the text info section in an Expanded widget
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 2. Remove the SizedBox completely so the text can use all available space
+                        Text(
+                          widget.name,
+                          overflow: TextOverflow
+                              .ellipsis, // Smoothly clips with '...' if it still manages to run out of space
+                          maxLines:
+                              1, // Optional: keeps the text strictly on a single line
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          '\$ ${widget.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.shopping_cart)),
+
+                  const SizedBox(
+                    width: 8,
+                  ), // Optional: Adds a tiny safety gap between long text and the button
+                  // Shows a shopping cart icon ONLY if selection amount is zero
+                  if (_quantity == 0)
+                    IconButton(
+                      onPressed: () => _changeQuantity(1),
+                      icon: const Icon(
+                        Icons.shopping_cart,
+                        color: Color(0xff8A5F41),
+                        size: 16,
+                      ),
+                    )
+                  else
+                    // Keeps standard alignment structural layout boundaries intact
+                    const SizedBox(height: 48, width: 48),
                 ],
               ),
             ),
