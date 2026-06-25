@@ -59,7 +59,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/c_and_t_logo.png"
+  image_path: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,7 +75,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/splash.json
-    - assets/c_and_t_logo.png
+    - assets/icon/icon.png
+    - assets/logo_tr.png
     - assets/google_logo.png
     - assets/page_1.png
     - assets/page_2.png
