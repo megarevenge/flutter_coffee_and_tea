@@ -59,7 +59,9 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: GlassBottomBar(
         selectedIconColor: const Color(0xff8A5F41),
         unselectedIconColor: const Color(0xffA77F60),
-        settings: LiquidGlassSettings(glassColor: Colors.grey.withAlpha(50)),
+        settings: LiquidGlassSettings(glassColor: Colors.white),
+        enableBlend: false,
+        interactionGlowRadius: 0,
         selectedIndex: _selectedIndex,
         onTabSelected: (index) {
           FocusScope.of(context).unfocus();
@@ -72,7 +74,7 @@ class _HomePageState extends State<HomePage> {
             curve: Curves.easeInOut,
           );
         },
-        quality: GlassQuality.premium,
+        quality: GlassQuality.minimal,
         tabs: [
           GlassBottomBarTab(
             label: 'Home',
